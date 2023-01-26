@@ -1,0 +1,14 @@
+.Task {
+    min-width: 100%;
+    background-color: red;
+}
+.table {
+    min-width: 650
+}
+.selectTableCell {
+    width: 60
+}
+.tableCell {
+    width: 130px;
+    height: 40px
+}

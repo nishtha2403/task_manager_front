@@ -16,12 +16,12 @@ function Member({ handleMemberData }) {
     component="form"
     className="Member"
     >
-    <Stack spacing={2} direction="row" >
-        <TextField id="memberName" label="Member Name" variant="outlined" value={name} onChange={(e) => { setName(e.target.value) }}/>
-        <TextField id="memberEmail" label="Member Email" variant="outlined" value={email} onChange={(e) => { setEmail(e.target.value) }}/>
-        <TextField id="role" label="Member Password" variant="outlined" value="employee" />
-        <TextField id="memberPassword" label="Member Password" variant="outlined" value={password} onChange={(e) => { setPassword(e.target.value) }}/>
-        <TextField id="memberMobile" label="Member Mobile" variant="outlined" value={mobile} onChange={(e) => { setMobile(e.target.value) }}/>
+    <Stack spacing={2} direction="row" flexWrap="wrap">
+        <TextField className='FieldStyle' id="memberName" label="Member Name" variant="outlined" value={name} onChange={(e) => { setName(e.target.value) }}/>
+        <TextField className='FieldStyle' id="memberEmail" label="Member Email" variant="outlined" value={email} onChange={(e) => { setEmail(e.target.value) }}/>
+        <TextField className='FieldStyle' id="role" label="Member Password" variant="outlined" value="employee" />
+        <TextField className='FieldStyle' id="memberPassword" label="Member Password" variant="outlined" value={password} onChange={(e) => { setPassword(e.target.value) }}/>
+        <TextField className='FieldStyle' id="memberMobile" label="Member Mobile" variant="outlined" value={mobile} onChange={(e) => { setMobile(e.target.value) }}/>
         <Button variant="contained"  onClick={() => {
           handleMemberData({ name, email, password, mobile, role: "employee"})
         }}>Add</Button>

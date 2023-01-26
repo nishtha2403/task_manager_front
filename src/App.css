@@ -7,7 +7,6 @@
   .App {
     width: 100vw;
     height: 100vh;
-    background-color: aliceblue;
   }
   
   .SpinVisible {
@@ -18,5 +17,9 @@
   
   .SpinInvisible {
     display: none;
+  }
+
+  .FieldStyle1 {
+    min-width: 300px !important;
   }
   

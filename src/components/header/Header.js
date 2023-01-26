@@ -1,18 +1,32 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import PlaylistAddCheckOutlinedIcon from '@mui/icons-material/PlaylistAddCheckOutlined';
+import { ColorButton } from '../helpers/Helpers';
 import './Header.css';
 
 function Header({ userLoggedIn }) {
+  const navigate = useNavigate();
   return (
     <Box sx={{ flexGrow: 1 }}
     >
         <AppBar position="static">
             <Toolbar>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                <IconButton
+                  size="large"
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  sx={{ mr: 1 }}
+                  onClick={() => navigate('/')}
+                >
+                  <PlaylistAddCheckOutlinedIcon />
+                </IconButton>
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={() => navigate('/')}>
                 Task Manager 
                 </Typography>
                 <Link className='LinkStyle' to="/">
@@ -20,24 +34,16 @@ function Header({ userLoggedIn }) {
                   Home
                   </Typography>
                 </Link>
-                <Link className='LinkStyle' to="/login">
-                  <Typography variant="h6" component="div"  sx={{ flexGrow: 1}}>
-                  Login
-                  </Typography>
-                </Link>
-                <Link className='LinkStyle' to="/signup">
-                  <Typography variant="h6" component="div" sx={{ flexGrow: 1}}>
-                  Signup
-                  </Typography>
-                </Link>
-                {
-                  userLoggedIn && 
-                  <Link className='LinkStyle' to="/dashboard">
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1}}>
-                    Dashboard
-                    </Typography>
-                </Link>
-                }
+                <ColorButton className='ButtonStyle1'>
+                  <Link className='LinkStyle2' to="/login">
+                    Login
+                  </Link>
+                </ColorButton>
+                <ColorButton>
+                  <Link className='LinkStyle2' to="/signup">
+                    Signup
+                  </Link>
+                </ColorButton>
             </Toolbar>
         </AppBar>
     </Box>

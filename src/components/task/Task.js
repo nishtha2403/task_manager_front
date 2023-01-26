@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { makeStyles } from "@material-ui/core/styles";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -7,54 +8,275 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import Input from "@material-ui/core/Input";
+import IconButton from "@material-ui/core/IconButton";
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+// Icons
+import EditIcon from "@material-ui/icons/EditOutlined";
+import DoneIcon from "@material-ui/icons/DoneAllTwoTone";
+import RevertIcon from "@material-ui/icons/NotInterestedOutlined";
+import DeleteIcon from '@mui/icons-material/DeleteOutline';
+
+const useStyles = makeStyles(theme => ({
+  root: {
+    width: "100%",
+    marginTop: theme.spacing(3),
+    overflowX: "auto"
+  },
+  table: {
+    minWidth: 650
+  },
+  selectTableCell: {
+    width: 60
+  },
+  tableCell: {
+    width: 130,
+    height: 40
+  },
+  input: {
+    width: 130,
+    height: 40
+  }
+}));
+
+
+const CustomTableCell = ({ row, name, onChange, team }) => {
+  const [selectedValue, setSelectedValue] = useState(`${row[name] || ''}`);
+  const classes = useStyles();
+  const { isEditMode } = row;
+  let menuItems = [];
+  switch(name) {
+    case 'status': 
+      menuItems = [
+        {
+          item: 'to-do',
+          value: 'to-do'
+        },
+        {
+          item: 'in-progress',
+          value: 'in-progress'
+        },
+        {
+          item: 'completed',
+          value: 'completed'
+        }
+      ]
+      break;
+    case 'priority':
+      menuItems = [
+        {
+          item: 'high',
+          value: 'high'
+        },
+        {
+          item: 'medium',
+          value: 'medium'
+        },
+        {
+          item: 'low',
+          value: 'low'
+        }
+      ]
+      break;
+    case 'assignee':
+      menuItems = team?.members?.map(member => {
+        return {
+          item: member.name,
+          value: member.id
+        }
+      });
+  }
+  console.log(menuItems);
+  return (
+    <TableCell align="left" className={classes.tableCell}>
+      {isEditMode ? (
+      <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+        <Select
+        id="menu-card"
+        value={selectedValue}
+        name={name}
+        onChange={e => { 
+          setSelectedValue(e.target.value);
+          onChange(e, row);
+        }}
+        >
+          {
+            menuItems.length > 0 && menuItems.map(itemObj => <MenuItem value={itemObj.value}>{itemObj.item}</MenuItem>)
+          }
+        </Select>
+      </FormControl>
+      ) : (
+        row[name] ? row[name] : '-'
+      )}
+    </TableCell>
+  );
+};
 
 function Task() {
+  const token = localStorage.getItem("accessToken"); console.log(token);
+  const { role, teamId } = JSON.parse(localStorage.getItem("user")); console.log(role,teamId);
   const [rows, setRows] = useState([]);
+  const [previous, setPrevious] = React.useState({});
+  const [updatedKeys, setUpdatedkeys] = React.useState({});
+  const [team, setTeam] = React.useState({});
+  const classes = useStyles();
 
   useEffect(() => {
     const fetchAllTasks = async () => {
-      const token = localStorage.getItem("accessToken");
       const { data } = await axios.get('http://localhost:5000/task', {
           headers: { Authorization: `Bearer ${token}` }
       });
-      const mappedTasksData = data.message.map(task => {
-        const { title, description, status, priority, due_date } = task;
-        return { title, description, status, priority, due_date };
-      });
-      setRows(mappedTasksData);
-      console.log(mappedTasksData);
+      setRows(data.message);
     }
-    fetchAllTasks();
+    const fetchAllTeamMembers = async () => {
+      const { data } = await axios.get(`http://localhost:5000/team/${teamId}`, {
+        headers: { Authorization: `Bearer ${token}`}
+      });
+      setTeam(data.message);
+    }
+    Promise.all([fetchAllTasks(), fetchAllTeamMembers()]);
   }, []);
+
+  const onToggleEditMode = id => {
+    setRows(state => {
+      return rows.map(row => {
+        if (row._id === id) {
+          return { ...row, isEditMode: !row.isEditMode };
+        }
+        return row;
+      });
+    });
+  };
+
+  const updateTask = async (taskId) => {
+    const { data } = await axios.put(`https://task-manager-rear.onrender.com/task/${taskId}`, updatedKeys, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  }
+
+  const onEditComplete = id => {
+    setRows(state => {
+      return rows.map(row => {
+        if (row._id === id) {
+          return { ...row, isEditMode: !row.isEditMode };
+        }
+        return row;
+      });
+    });
+    updateTask(id);
+  }
+
+  const onChange = (e, row) => {
+    if (!previous[row._id]) {
+      setPrevious(state => ({ ...state, [row._id]: row }));
+    }
+    const value = e.target.value;
+    const name = e.target.name;
+    const { _id: id } = row;
+    const newRows = rows.map(row => {
+      if (row._id === id) {
+        return { ...row, [name]: value };
+      }
+      return row;
+    });
+    setRows(newRows);
+    setUpdatedkeys({...updatedKeys, [name]: value });
+  };
+
+  const onRevert = id => {
+    const newRows = rows.map(row => {
+      if (row._id === id) {
+        return previous[id] ? previous[id] : row;
+      }
+      return row;
+    });
+    setRows(newRows);
+    setPrevious(state => {
+      delete state[id];
+      return state;
+    });
+    onToggleEditMode(id);
+  };
+
+  const deleteTask = async (id) => {
+    await axios.delete(`http://localhost:5000/task/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const newRows = rows.map(row => row._id !== id);
+    setRows(newRows);
+  }
+
+  const getFormatedDueDate = (date) => {
+    const dateObj = new Date(date);
+    return `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
+  }
 
   return (
     <div>
       <h1>All Tasks</h1>
-       <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+       <TableContainer component={Paper} className={classes.root}>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table" className={classes.table}>
             <TableHead>
               <TableRow>
                 <TableCell>Title</TableCell>
-                <TableCell align="right">Description</TableCell>
-                <TableCell align="right">Status</TableCell>
-                <TableCell align="right">Priority</TableCell>
-                <TableCell align="right">Due Date</TableCell>
+                <TableCell align="left">Description</TableCell>
+                <TableCell align="left">Due Date</TableCell>
+                <TableCell align="left">Status</TableCell>
+                <TableCell align="left">Priority</TableCell>
+                {
+                  role === "manager" && <TableCell align="left">Assignee</TableCell>
+                }
+                <TableCell align="left">Edit</TableCell>
+                <TableCell align="left">Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {rows.map((row) => (
-                <TableRow
-                  key={row._id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
-                    {row.title}
+                <TableRow key={row._id}>
+                  <TableCell>{row.title}</TableCell>
+                  <TableCell>{row.description}</TableCell>
+                  <TableCell>{row.due_date ? getFormatedDueDate(row.due_date): ''}</TableCell>
+                  <CustomTableCell {...{ row, name: "status", onChange }} />
+                  <CustomTableCell {...{ row, name: "priority", onChange }} />
+                  {
+                    role === "manager" && <CustomTableCell {...{ row, name: "assignee", onChange, team }} />
+                  }
+                  <TableCell className={classes.selectTableCell}>
+                    {row.isEditMode ? (
+                      <>
+                        <IconButton
+                          aria-label="done"
+                          onClick={() => onEditComplete(row._id)}
+                        >
+                          <DoneIcon />
+                        </IconButton>
+                        <IconButton
+                          aria-label="revert"
+                          onClick={() => onRevert(row._id)}
+                        >
+                          <RevertIcon />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => onToggleEditMode(row._id)}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    )}
                   </TableCell>
-                  <TableCell align="right">{row.description}</TableCell>
-                  <TableCell align="right">{row.status}</TableCell>
-                  <TableCell align="right">{row.priority}</TableCell>
-                  <TableCell align="right">{row.due_date}</TableCell>
-                </TableRow>
+                  <TableCell className={classes.selectTableCell}>
+                    <IconButton
+                          aria-label="delete"
+                          onClick={() => deleteTask(row._id)}
+                        >
+                          <DeleteIcon />
+                      </IconButton>
+                  </TableCell>
+              </TableRow>
               ))}
             </TableBody>
           </Table>
