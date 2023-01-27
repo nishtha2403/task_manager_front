@@ -1,25 +1,15 @@
   
-  body {
-    font-family: Arial, Helvetica, sans-serif;
-    line-height: 1.4;
-  }
-  
-  .App {
-    width: 100vw;
-    height: 100vh;
-  }
-  
-  .SpinVisible {
-    display: block;
-    width: 100px;
-    height: 100px;
-  }
-  
-  .SpinInvisible {
-    display: none;
-  }
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.4;
+}
 
-  .FieldStyle1 {
-    min-width: 300px !important;
-  }
+.App {
+  width: 100vw;
+  height: 100vh;
+}
+
+.FieldStyle1 {
+  min-width: 300px !important;
+}
   

@@ -1,15 +1,17 @@
 import React from 'react';
 import { Stack, Button } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
 function Home() {
   const user = localStorage.getItem('user');
-  let name, role;
+  const team = localStorage.getItem('team');
+  let name, role, teamId;
   if (user) {
     const parsedUser = JSON.parse(user); 
     name = parsedUser.name;
     role = parsedUser.role;
+    teamId = parsedUser.teamId;
   };
   const navigate = useNavigate();
   return (
@@ -20,8 +22,15 @@ function Home() {
         <div>
           <p className='Description'>Welcome! {name}</p>
           <Stack direction='column' spacing={2}>
-            <Button variant="contained" onClick={() => { navigate('/create-team') }}>Create Team</Button>
-            <Button variant="contained" onClick={() => { navigate('/create-task') }}>Create Task</Button>
+            {
+              (role === 'manager' || team)  && !teamId && <Button variant="contained" onClick={() => { navigate('/create-team') }}>Create Team</Button>
+            }
+            {
+              role === 'manager' && <Button variant="contained" onClick={() => { navigate('/add-members') }}>Add New Member</Button>
+            }
+            {
+              role === 'manager' && <Button variant="contained" onClick={() => { navigate('/create-task') }}>Create New Task</Button>
+            }
             <Button variant="contained" onClick={() => { navigate('/view-task') }}>View All Task</Button>
           </Stack>
         </div>

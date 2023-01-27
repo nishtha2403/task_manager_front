@@ -20,6 +20,7 @@ function Signup() {
 
   const signupUser = async () => {
     setDisplaySpinner(true);
+    console.log("SIgnup user");
     await axios.post('https://task-manager-rear.onrender.com/register', {
       name,
       email,

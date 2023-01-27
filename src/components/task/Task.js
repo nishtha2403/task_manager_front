@@ -8,16 +8,17 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Input from "@material-ui/core/Input";
 import IconButton from "@material-ui/core/IconButton";
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import CircularProgress from '@mui/material/CircularProgress';
 // Icons
 import EditIcon from "@material-ui/icons/EditOutlined";
 import DoneIcon from "@material-ui/icons/DoneAllTwoTone";
 import RevertIcon from "@material-ui/icons/NotInterestedOutlined";
 import DeleteIcon from '@mui/icons-material/DeleteOutline';
+import './Task.css';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -88,7 +89,6 @@ const CustomTableCell = ({ row, name, onChange, team }) => {
         }
       });
   }
-  console.log(menuItems);
   return (
     <TableCell align="left" className={classes.tableCell}>
       {isEditMode ? (
@@ -115,8 +115,9 @@ const CustomTableCell = ({ row, name, onChange, team }) => {
 };
 
 function Task() {
-  const token = localStorage.getItem("accessToken"); console.log(token);
-  const { role, teamId } = JSON.parse(localStorage.getItem("user")); console.log(role,teamId);
+  const token = localStorage.getItem("accessToken");
+  const { role, teamId } = JSON.parse(localStorage.getItem("user"));
+  const [displaySpinner, setDisplaySpinner] = useState(true);
   const [rows, setRows] = useState([]);
   const [previous, setPrevious] = React.useState({});
   const [updatedKeys, setUpdatedkeys] = React.useState({});
@@ -125,13 +126,14 @@ function Task() {
 
   useEffect(() => {
     const fetchAllTasks = async () => {
-      const { data } = await axios.get('http://localhost:5000/task', {
+      const { data } = await axios.get('https://task-manager-rear.onrender.com/task', {
           headers: { Authorization: `Bearer ${token}` }
       });
       setRows(data.message);
+      setDisplaySpinner(false);
     }
     const fetchAllTeamMembers = async () => {
-      const { data } = await axios.get(`http://localhost:5000/team/${teamId}`, {
+      const { data } = await axios.get(`https://task-manager-rear.onrender.com/team/${teamId}`, {
         headers: { Authorization: `Bearer ${token}`}
       });
       setTeam(data.message);
@@ -201,11 +203,14 @@ function Task() {
   };
 
   const deleteTask = async (id) => {
-    await axios.delete(`http://localhost:5000/task/${id}`, {
+    console.log(id);
+    setDisplaySpinner(true);
+    await axios.delete(`https://task-manager-rear.onrender.com/task/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    const newRows = rows.map(row => row._id !== id);
+    const newRows = rows.filter(row => row._id !== id);
     setRows(newRows);
+    setDisplaySpinner(false);
   }
 
   const getFormatedDueDate = (date) => {
@@ -214,22 +219,28 @@ function Task() {
   }
 
   return (
-    <div>
+    <div className='Task'>
       <h1>All Tasks</h1>
-       <TableContainer component={Paper} className={classes.root}>
+      {
+        displaySpinner && 
+        <CircularProgress />
+      }
+      {
+        !displaySpinner &&
+        <TableContainer component={Paper} className={classes.root}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table" className={classes.table}>
             <TableHead>
               <TableRow>
-                <TableCell>Title</TableCell>
-                <TableCell align="left">Description</TableCell>
-                <TableCell align="left">Due Date</TableCell>
-                <TableCell align="left">Status</TableCell>
-                <TableCell align="left">Priority</TableCell>
+                <TableCell sx={{fontWeight: 'bold'}}>Title</TableCell>
+                <TableCell sx={{fontWeight: 'bold'}} align="left">Description</TableCell>
+                <TableCell sx={{fontWeight: 'bold'}} align="left">Due Date</TableCell>
+                <TableCell sx={{fontWeight: 'bold'}} align="left">Status</TableCell>
+                <TableCell sx={{fontWeight: 'bold'}} align="left">Priority</TableCell>
                 {
-                  role === "manager" && <TableCell align="left">Assignee</TableCell>
+                  role === "manager" && <TableCell sx={{fontWeight: 'bold'}} align="left">Assignee</TableCell>
                 }
-                <TableCell align="left">Edit</TableCell>
-                <TableCell align="left">Action</TableCell>
+                <TableCell sx={{fontWeight: 'bold'}} align="left">Edit</TableCell>
+                <TableCell sx={{fontWeight: 'bold'}} align="left">Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -280,7 +291,8 @@ function Task() {
               ))}
             </TableBody>
           </Table>
-      </TableContainer>
+        </TableContainer>
+      }
     </div>
   )
 }

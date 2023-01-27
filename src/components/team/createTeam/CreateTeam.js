@@ -22,14 +22,25 @@ function CreateTeam() {
       setMembers([...members, members.length + 1]);
     }
 
-    const handleMemberData = (newMemberData) => {
-      setMembersData([...membersData, newMemberData]);
+    const handleMemberData = (changedMemberData) => {
+      const oldData = [...membersData];
+      if(membersData.length > 0) {
+        const findMember = oldData.filter(member => member.email === changedMemberData.email);
+        if(findMember.length > 0) {
+          const filterChangedMember = oldData.filter(member => member.email !== changedMemberData.email);
+          setMembersData([...filterChangedMember, changedMemberData]);
+        }
+      }
+    }
+    
+    const handleAllData = (member) => {
+      setMembersData([...membersData, member]);
     }
 
     const createTeam = async () => {
       setDisplaySpinner(true);
       const token = localStorage.getItem("accessToken");
-      await axios.post('https://task-manager-rear.onrender.com/create-team', {
+      const { data } = await axios.post('https://task-manager-rear.onrender.com/team', {
         team_id: teamId,
         name: teamName,
         members: membersData
@@ -38,7 +49,8 @@ function CreateTeam() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDisplaySpinner(false);
-      navigate('/dashboard');
+      localStorage.setItem("team", JSON.stringify(data.message));
+      navigate('/');
     }
 
   return (
@@ -59,7 +71,7 @@ function CreateTeam() {
               <Typography variant="h5" component="div" sx={{ flexGrow: 1, marginTop: '5rem !important', marginBottom: '1rem' }}>
                 Add Team Members
               </Typography>            {
-                members.map(member => <Member key={member} handleMemberData={handleMemberData} />)
+                members.map(member => <Member key={member} handleMemberData={handleMemberData} handleAllData={handleAllData} membersData={membersData}/>)
               }
               <Button className='ButtonStyle' variant="contained" onClick={addTeamMember}>Add More Members</Button>
               <Button variant="contained" onClick={createTeam}>Done</Button>

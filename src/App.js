@@ -8,6 +8,7 @@ import Signup from './components/signup/Signup';
 import CreateTeam from './components/team/createTeam/CreateTeam';
 import NewTask from './components/task/newTask/NewTask';
 import Task from './components/task/Task';
+import NewMember from './components/team/newMember/NewMember';
 
 function App() {
   const [ userLoggedIn, setUserLoggedIn ] = useState(false);
@@ -24,6 +25,7 @@ function App() {
         <Route path="/login" element={<Login setUserLoggedIn={setUserLoggedIn} />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/create-team" element={<CreateTeam />} />
+        <Route path="/add-members" element={<NewMember />} />
         <Route path="/create-task" element={<NewTask />} />
         <Route path="/view-task" element={<Task />} />
       </Routes>

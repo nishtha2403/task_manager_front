@@ -38,7 +38,7 @@ function Login({ setUserLoggedIn }) {
   }
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2rem' }}>
       {
         !displaySpinner && 
         <Box
